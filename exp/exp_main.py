@@ -10,6 +10,7 @@ import torch
 import torch.nn as nn
 from torch import optim
 from torch.optim import lr_scheduler
+import pandas as pd
 
 import os
 import time
@@ -17,6 +18,9 @@ import time
 import warnings
 import matplotlib.pyplot as plt
 import numpy as np
+
+from icecream import ic
+
 
 warnings.filterwarnings('ignore')
 
@@ -76,8 +80,9 @@ class Exp_Main(Exp_Basic):
                 dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
                 dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
                 # encoder - decoder
-                if self.args.use_amp:
-                    with torch.cuda.amp.autocast():
+                if self.args.use_amp:  # Use Automatic Mixed Precision, default=False
+                    #with torch.cuda.amp.autocast():
+                    with torch.amp.autocast("cuda"):
                         if any(substr in self.args.model for substr in {'Cycle'}):
                             outputs = self.model(batch_x, batch_cycle)
                         elif any(substr in self.args.model for substr in
@@ -129,7 +134,7 @@ class Exp_Main(Exp_Basic):
         model_optim = self._select_optimizer()
         criterion = self._select_criterion()
 
-        if self.args.use_amp:
+        if self.args.use_amp:  # Use Automatic Mixed Precision, default=False
             #scaler = torch.cuda.amp.GradScaler()
             scaler = torch.amp.GradScaler("cuda")
 
@@ -161,7 +166,7 @@ class Exp_Main(Exp_Basic):
                 dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
 
                 # encoder - decoder
-                if self.args.use_amp:
+                if self.args.use_amp:  # Use Automatic Mixed Precision, default=False
                     #with torch.cuda.amp.autocast():
                     with torch.amp.autocast("cuda"):
                         if any(substr in self.args.model for substr in {'Cycle'}):
@@ -206,7 +211,7 @@ class Exp_Main(Exp_Basic):
                     iter_count = 0
                     time_now = time.time()
 
-                if self.args.use_amp:
+                if self.args.use_amp:  # Use Automatic Mixed Precision, default=False
                     scaler.scale(loss).backward()
                     scaler.step(model_optim)
                     scaler.update()
@@ -273,7 +278,7 @@ class Exp_Main(Exp_Basic):
                 dec_inp = torch.zeros_like(batch_y[:, -self.args.pred_len:, :]).float()
                 dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
                 # encoder - decoder
-                if self.args.use_amp:
+                if self.args.use_amp:  # Use Automatic Mixed Precision, default=False
                     #with torch.cuda.amp.autocast():
                     with torch.amp.autocast("cuda"):
                         if any(substr in self.args.model for substr in {'Cycle'}):
@@ -299,7 +304,8 @@ class Exp_Main(Exp_Basic):
                             outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark)
 
                 f_dim = -1 if self.args.features == 'MS' else 0
-                # print(outputs.shape,batch_y.shape)
+                ic(outputs.shape, batch_y.shape, f_dim)
+
                 outputs = outputs[:, -self.args.pred_len:, f_dim:]
                 batch_y = batch_y[:, -self.args.pred_len:, f_dim:].to(self.device)
                 outputs = outputs.detach().cpu().numpy()
@@ -313,11 +319,18 @@ class Exp_Main(Exp_Basic):
                 # inputx.append(batch_x.detach().cpu().numpy())
                 if i % 20 == 0:
                     input = batch_x.detach().cpu().numpy()
+                    ic(pred)
+                    ic(true)
+                    ic(input[0:2, 0, 0:])
                     gt = np.concatenate((input[0, :, -1], true[0, :, -1]), axis=0)
                     pd = np.concatenate((input[0, :, -1], pred[0, :, -1]), axis=0)
                     visual(gt, pd, os.path.join(folder_path, str(i) + '.pdf'))
                     np.savetxt(os.path.join(folder_path, str(i) + '.txt'), pd)
                     np.savetxt(os.path.join(folder_path, str(i) + 'true.txt'), gt)
+                    print("output files saved")
+
+                input2 = batch_x.detach().cpu().numpy()
+                ic(input2[0:3, 0, 0:], input2.shape)
 
         if self.args.test_flop:
             test_params_flop(self.model, (batch_x.shape[1], batch_x.shape[2]))
@@ -363,19 +376,20 @@ class Exp_Main(Exp_Basic):
         self.model.eval()
         with torch.no_grad():
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, batch_cycle) in enumerate(pred_loader):
+            #for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(pred_loader):
+                print(f"i = {i}: in {__file__}")
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float()
                 batch_x_mark = batch_x_mark.float().to(self.device)
                 batch_y_mark = batch_y_mark.float().to(self.device)
-                batch_cycle = batch_cycle.int().to(self.device)
+                batch_cycle = batch_cycle.int().to(self.device)  
 
                 # decoder input
                 dec_inp = torch.zeros([batch_y.shape[0], self.args.pred_len, batch_y.shape[2]]).float().to(
                     batch_y.device)
                 dec_inp = torch.cat([batch_y[:, :self.args.label_len, :], dec_inp], dim=1).float().to(self.device)
                 # encoder - decoder
-                if self.args.use_amp:
-                    #with torch.cuda.amp.autocast():
+                if self.args.use_amp:  # Use Automatic Mixed Precision, default=False
                     with torch.amp.autocast("cuda"):
                         if any(substr in self.args.model for substr in {'Cycle'}):
                             outputs = self.model(batch_x, batch_cycle)
@@ -400,8 +414,17 @@ class Exp_Main(Exp_Basic):
                 pred = outputs.detach().cpu().numpy()  # .squeeze()
                 preds.append(pred)
 
+        print(f"preds type 1 = {type(preds)}, length = {len(preds)}, preds[0] type = {type(preds[0])}")
+        #inv_preds = pred_data.scaler.inverse_transform(pd.DataFrame(preds))
+
         preds = np.array(preds)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
+        print(f"preds shape = {preds.shape}")
+        inv_preds = preds.copy()
+        inv_preds = inv_preds.reshape((inv_preds.shape[1], preds.shape[-1]))
+        inv_preds = pred_data.scaler.inverse_transform(pd.DataFrame(inv_preds))
+        print(f"inv preds shape = {inv_preds.shape}")
+
 
         # result save
         folder_path = './results/' + setting + '/'
@@ -409,5 +432,6 @@ class Exp_Main(Exp_Basic):
             os.makedirs(folder_path)
 
         np.save(folder_path + 'real_prediction.npy', preds)
+        np.save(folder_path + "inv_scaled_prediction.npy", inv_preds)
 
         return
