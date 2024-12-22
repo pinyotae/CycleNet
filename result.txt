@@ -2881,3 +2881,27 @@ mse:0.20077380537986755, mae:0.25914350152015686
 ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
 mse:0.3715338408946991, mae:0.3935357332229614
 
+ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
+mse:0.3715338408946991, mae:0.3935357332229614
+
+ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
+mse:0.3715338408946991, mae:0.3935357332229614
+
+ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
+mse:0.3715338408946991, mae:0.3935357332229614
+
+ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
+mse:0.3715338408946991, mae:0.3935357332229614
+
+ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
+mse:0.3715338408946991, mae:0.3935357332229614
+
+ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
+mse:0.3715338408946991, mae:0.3935357332229614
+
+ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
+mse:0.3715338408946991, mae:0.3935357332229614
+
+ETTh1_seq_336_pred_96_cycle_24_CycleNet_ETTh1_ftM_sl336_pl96_cycle24_linear_seed2024  
+mse:0.3715338408946991, mae:0.3935357332229614
+
