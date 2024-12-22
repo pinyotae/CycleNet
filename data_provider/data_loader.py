@@ -878,10 +878,12 @@ class Dataset_Custom(Dataset):
 
 
 ## TODO add cycle
+# Note from Pinyo: addinng cycle for a general task is not trivial because we have to understand how a cycle is
+#   computed and each task has its own nature.
 class Dataset_Pred(Dataset):
     def __init__(self, root_path, flag='pred', size=None,
                  features='S', data_path='ETTh1.csv',
-                 target='OT', scale=True, inverse=False, timeenc=0, freq='15min', cols=None):
+                 target='OT', scale=True, inverse=False, timeenc=0, freq='15min', cols=None, cycle=None):
         # size [seq_len, label_len, pred_len]
         # info
         if size == None:
@@ -902,6 +904,7 @@ class Dataset_Pred(Dataset):
         self.timeenc = timeenc
         self.freq = freq
         self.cols = cols
+        self.cycle = cycle  # Probably unused
         self.root_path = root_path
         self.data_path = data_path
         self.__read_data__()
@@ -931,6 +934,7 @@ class Dataset_Pred(Dataset):
             df_data = df_raw[[self.target]]
 
         if self.scale:
+            print(f"--- data is subject to scaling. ---")
             self.scaler.fit(df_data.values)
             data = self.scaler.transform(df_data.values)
         else:
@@ -961,6 +965,9 @@ class Dataset_Pred(Dataset):
             self.data_y = data[border1:border2]
         self.data_stamp = data_stamp
 
+        # add cycle
+        self.cycle_index = (np.arange(len(data)) % self.cycle)[border1:border2]
+
     def __getitem__(self, index):
         s_begin = index
         s_end = s_begin + self.seq_len
@@ -974,8 +981,10 @@ class Dataset_Pred(Dataset):
             seq_y = self.data_y[r_begin:r_begin + self.label_len]
         seq_x_mark = self.data_stamp[s_begin:s_end]
         seq_y_mark = self.data_stamp[r_begin:r_end]
+        s_end = s_end % len(self.cycle_index)  # Pinyo: add to make a circular indexing, prevent out-of-bounds error
+        cycle_index = torch.tensor(self.cycle_index[s_end])
 
-        return seq_x, seq_y, seq_x_mark, seq_y_mark
+        return seq_x, seq_y, seq_x_mark, seq_y_mark, cycle_index
 
     def __len__(self):
         return len(self.data_x) - self.seq_len + 1
