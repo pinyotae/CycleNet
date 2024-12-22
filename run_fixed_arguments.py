@@ -178,8 +178,12 @@ def main(args=None):
             fix_seed)
 
         exp = Exp(args)  # set experiments
-        print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
-        exp.test(setting, test=1)
+        #print('>>>>>>>testing : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+        #exp.test(setting, test=1)
+        print('>>>>>>>predicting : {}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<'.format(setting))
+        load_model = True
+        exp.predict(setting, load=load_model)
+
         torch.cuda.empty_cache()
 
 
@@ -187,7 +191,7 @@ def main(args=None):
 model_name = "CycleNet"
 
 root_path_name = "E:/Data/CycleNetTimeSeries/"
-data_path_name = "ETTh1.csv"
+data_path_name = "pred_ETTh1.csv"
 model_id_name = "ETTh1"
 data_name = "ETTh1"
 
@@ -200,10 +204,10 @@ random_seed = '2024'
 cycle = '24'
 
 sys.argv = []
-a = sys.argv.extend(['--is_training', '1',
+a = sys.argv.extend(['--is_training', '0',
                      '--root_path', root_path_name, 
                      '--data_path', data_path_name, 
-                     '--model_id', f"{model_id_name}_seq_{seq_len}_pred_{pred_len}", 
+                     '--model_id', f"{model_id_name}_seq_{seq_len}_pred_{pred_len}_cycle_{cycle}", 
                      '--model', model_name, 
                      '--data', data_name,    
                      '--model_type', model_type, 
