@@ -376,8 +376,6 @@ class Exp_Main(Exp_Basic):
         self.model.eval()
         with torch.no_grad():
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark, batch_cycle) in enumerate(pred_loader):
-            #for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(pred_loader):
-                print(f"i = {i}: in {__file__}")
                 batch_x = batch_x.float().to(self.device)
                 batch_y = batch_y.float()
                 batch_x_mark = batch_x_mark.float().to(self.device)
@@ -414,24 +412,20 @@ class Exp_Main(Exp_Basic):
                 pred = outputs.detach().cpu().numpy()  # .squeeze()
                 preds.append(pred)
 
-        print(f"preds type 1 = {type(preds)}, length = {len(preds)}, preds[0] type = {type(preds[0])}")
-        #inv_preds = pred_data.scaler.inverse_transform(pd.DataFrame(preds))
-
         preds = np.array(preds)
         preds = preds.reshape(-1, preds.shape[-2], preds.shape[-1])
-        print(f"preds shape = {preds.shape}")
+
+        # Invert data to the original scale
         inv_preds = preds.copy()
         inv_preds = inv_preds.reshape((inv_preds.shape[1], preds.shape[-1]))
         inv_preds = pred_data.scaler.inverse_transform(pd.DataFrame(inv_preds))
-        print(f"inv preds shape = {inv_preds.shape}")
-
 
         # result save
         folder_path = './results/' + setting + '/'
         if not os.path.exists(folder_path):
             os.makedirs(folder_path)
 
-        np.save(folder_path + 'real_prediction.npy', preds)
-        np.save(folder_path + "inv_scaled_prediction.npy", inv_preds)
+        np.save(folder_path + 'sales_real_prediction.npy', preds)
+        np.save(folder_path + "sales_orig_scaled_prediction.npy", inv_preds)
 
         return
