@@ -1,3 +1,5 @@
+This is a forked and modified version to make it more suitable to run with other datasets.
+
 # CycleNet
 
 Welcome to the official repository of the CycleNet paper: "[CycleNet: Enhancing Time Series Forecasting through Modeling Periodic Patterns](https://arxiv.org/pdf/2409.18479)". 
